@@ -1,0 +1,80 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Data Table Edit Example</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.6.0/css/bootstrap.min.css">
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+</head>
+<body>
+    <div class="container" style=" text-align: center; padding: 10px; margin: 10px;">
+        <h3 style="padding: 8px; margin: 20px;">Person Table</h3>
+        <table class="table table-active table-bordered table-center table-info table-striped" id="person-table" style="padding: 10px; margin: 10px;">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Address</th>
+                <th>Age</th>
+                <th>Action</th>
+
+            </tr>
+        </thead>
+        <tbody>
+            {% for person in persons %}
+            <tr data-id="{{ person.id }}">
+                <td contenteditable="true">{{ person.name }}</td>
+                <td contenteditable="true">{{ person.adress }}</td>
+                <td contenteditable="true">{{ person.age }}</td>
+                <td>
+                    <button type="button" style="font-size:15px" class="btn btn-info update-btn">Update</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Send updated data to the server on keyup
+            $('#person-table td').on('keyup', function() {
+                $('')
+                var row = $(this).closest('tr');
+                var id = row.data('id');
+                var name = row.find('td:eq(0)').text();
+                var adress = row.find('td:eq(1)').text();
+                var age = row.find('td:eq(2)').text();
+
+                $.ajax({
+                    url: '/update_person/',
+                    method: 'POST',
+                    data: {
+                        'id': id,
+                        'name': name,
+                        'adress': adress,
+                        'age': age,
+                        'csrfmiddlewaretoken': '{{ csrf_token }}'
+                    },
+                    success: function(data) {
+                        
+                        $('#person-table').on('click', '.update-btn', function() {
+                        if (data.status === 'success') {
+                            // Handle success, if needed
+                           alert('Data updated successfully.');
+                        } else {
+                            // Handle error, if needed
+                           alert('Error updating data:', data.message);
+                        }
+                    });
+                    },
+                    error: function(xhr, errmsg, err) {
+                        // Handle error, if needed
+                        console.error('Ajax request error:', err);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
